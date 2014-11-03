@@ -14,20 +14,21 @@
   $bot_id = (isset($_COOKIE['bot_id'])) ? $_COOKIE['bot_id'] :($botId !== false && $botId !== null) ? $botId : 1;
   setcookie('bot_id', $bot_id);
   // Experimental code
+/*
   $base_URL  = 'http://' . $_SERVER['HTTP_HOST'];                                   // set domain name for the script
   $this_path = str_replace(DIRECTORY_SEPARATOR, '/', realpath(dirname(__FILE__)));  // The current location of this file, normalized to use forward slashes
   $this_path = str_replace($_SERVER['DOCUMENT_ROOT'], $base_URL, $this_path);       // transform it from a file path to a URL
   $url = str_replace('gui/jquery', 'chatbot/conversation_start.php', $this_path);   // and set it to the correct script location
-/*
+
   Example URL's for use with the chatbot API
   $url = 'http://api.program-o.com/v2.3.1/chatbot/';
   $url = 'http://localhost/Program-O/Program-O/chatbot/conversation_start.php';
   $url = 'chat.php';
 */
+  $url = 'http://web.stanford.edu/~mulrich/cgi-bin/Program-O/gui/jquery/';
 
-  $display = "The URL for the API is currently set as:<br />\n$url.<br />\n";
-  $display .= 'Please make sure that you edit this file to change the value of the variable $url in this file to reflect the correct URL address of your chatbot, and to remove this message.' . PHP_EOL;
-  #$display = '';
+//  $display = "The URL for the API is currently set as:<br />\n$url.<br />\n";
+//  $display .= 'Please make sure that you edit this file to change the value of the variable $url in this file to reflect the correct URL address of your chatbot, and to remove this message.' . PHP_EOL;
 
   /**
    * Function jq_get_convo_id
@@ -54,7 +55,7 @@
     <link rel="icon" href="./favicon.ico" type="image/x-icon" />
     <link rel="shortcut icon" href="./favicon.ico" type="image/x-icon" />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>Program O AIML PHP Chatbot</title>
+    <title>ChameleonBot</title>
     <meta name="Description" content="A Free Open Source AIML PHP MySQL Chatbot called Program-O. Version2" />
     <meta name="keywords" content="Open Source, AIML, PHP, MySQL, Chatbot, Program-O, Version2" />
     <meta name="keywords" content="Open Source, AIML, PHP, MySQL, Chatbot, Program-O, Version2" />
@@ -68,6 +69,10 @@
         margin-left: 0;
       }
 
+      body {
+          padding: 20px;
+      }
+
       .user_name {
         color: rgb(16, 45, 178);
       }
@@ -75,15 +80,7 @@
         color: rgb(204, 0, 0);
       }
       #shameless_plug, #urlwarning {
-        position: absolute;
-        right: 10px;
-        bottom: 10px;
-        border: 1px solid red;
-        box-sizing: border-box;
-        -moz-box-sizing: border-box;
-        box-shadow: 2px 2px 2px 0 #808080;
-        padding: 5px;
-        border-radius: 5px;
+        margin-top: 20px;
       }
       #urlwarning {
         right: auto;
@@ -115,11 +112,9 @@
     </style>
   </head>
   <body>
-    <h3>Program O XML GUI</h3>
+    <h3>ChameleonBot</h3>
     <p>
-      This is a simple example of how to access the Program O chatbot using the JSON API. Feel free to change the HTML
-      code for this page to suit your specific needs. For more advanced uses, please visit the <a href="http://www.forum.program-o.com/">
-      Program O Forums</a> to ask for assistance.
+      The beginnings of a CS 221 project by Marcus, Mark, and Tristan.
     </p>
     <div class="centerthis">
       <div class="rightside">
@@ -145,9 +140,8 @@
       </form>
     </div>
     <div id="shameless_plug">
-      To get your very own chatbot, visit <a href="http://www.program-o.com">program-o.com</a>!
+      Chatbot powered by code from <a href="http://www.program-o.com" target="_top">program-o.com</a>!
     </div>
-    <div id="urlwarning"><?php echo $display ?></div>
     <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
     <script type="text/javascript" >
      $(document).ready(function() {

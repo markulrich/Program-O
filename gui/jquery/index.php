@@ -14,19 +14,20 @@ $convo_id = (isset($_COOKIE[$cookie_name])) ? $_COOKIE[$cookie_name] : jq_get_co
 $bot_id = (isset($_COOKIE['bot_id'])) ? $_COOKIE['bot_id'] : ($botId !== false && $botId !== null) ? $botId : 1;
 setcookie('bot_id', $bot_id);
 // Experimental code
-
+/*
   $base_URL  = 'http://' . $_SERVER['HTTP_HOST'];                                   // set domain name for the script
   $this_path = str_replace(DIRECTORY_SEPARATOR, '/', realpath(dirname(__FILE__)));  // The current location of this file, normalized to use forward slashes
   $this_path = str_replace($_SERVER['DOCUMENT_ROOT'], $base_URL, $this_path);       // transform it from a file path to a URL
   $url = str_replace('gui/jquery', 'chatbot/conversation_start.php', $this_path);   // and set it to the correct script location
-/*
+
   Example URL's for use with the chatbot API
   $url = 'http://api.program-o.com/v2.3.1/chatbot/';
   $url = 'http://localhost/Program-O/Program-O/chatbot/conversation_start.php';
   $url = 'chat.php';
-
-$url = 'http://web.stanford.edu/~mulrich/cgi-bin/Program-O/gui/jquery/';
 */
+
+$url = 'http://web.stanford.edu/~mulrich/cgi-bin/Program-O/chatbot/conversation_start.php';
+
 //  $display = "The URL for the API is currently set as:<br />\n$url.<br />\n";
 //  $display .= 'Please make sure that you edit this file to change the value of the variable $url in this file to reflect the correct URL address of your chatbot, and to remove this message.' . PHP_EOL;
 
@@ -74,14 +75,6 @@ function jq_get_convo_id()
             padding: 20px;
         }
 
-        .user_name {
-            color: rgb(16, 45, 178);
-        }
-
-        .bot_name {
-            color: rgb(204, 0, 0);
-        }
-
         #shameless_plug, #urlwarning {
             margin-top: 20px;
         }
@@ -93,18 +86,6 @@ function jq_get_convo_id()
             font-size: large;
             font-weight: bold;
             background-color: white;
-        }
-
-        .leftside {
-            text-align: right;
-            float: left;
-            width: 48%;
-        }
-
-        .rightside {
-            text-align: left;
-            float: right;
-            width: 48%;
         }
 
         .centerthis {
@@ -127,31 +108,19 @@ function jq_get_convo_id()
 </p>
 
 <div class="centerthis">
-    <div class="rightside">
-        <div class="manspeech">
-            <div class="triangle-border bottom blue">
-                <div class="botsay">Hey!</div>
-            </div>
-        </div>
-        <div class="man"></div>
+    <div id="chatboard">
+        <div class="botsay">Hello!</div>
     </div>
-    <div class="leftside">
-        <div class="dogspeech">
-            <div class="triangle-border-right bottom orange">
-                <div class="usersay">&nbsp;</div>
-            </div>
-        </div>
-        <br/>
-
-        <div class="dog"></div>
+    <div id="spinner" class="spinner" style="display:none;">
+        <img id="img-spinner" src="spinner.gif" alt="Loading"/>
     </div>
 </div>
 <div class="clearthis"></div>
 <div class="centerthis">
     <form method="post" name="talkform" id="talkform" action="index.php">
         <div id="chatdiv">
-            <label for="submit">Say:</label>
-            <input type="text" name="say" id="say" size="60"/>
+            <label for="submit">Me:</label>
+            <label for="say"></label><input type="text" name="say" id="say" size="60"/>
             <input type="submit" name="submit" id="submit" class="submit" value="say"/>
             <input type="hidden" name="convo_id" id="convo_id" value="<?php echo $convo_id; ?>"/>
             <input type="hidden" name="bot_id" id="bot_id" value="<?php echo $bot_id; ?>"/>
@@ -160,23 +129,34 @@ function jq_get_convo_id()
     </form>
 </div>
 <div id="shameless_plug">
-    Chatbot powered by code from <a href="http://www.program-o.com" target="_top">program-o.com</a>!
+    Chatbot powered by code from <a href="http://www.program-o.com" target="_top">program-o.com</a>
 </div>
 <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
 <script type="text/javascript">
     $(document).ready(function () {
         // put all your jQuery goodness in here.
+
+        var spinner = $('#spinner');
+
+        $(document).bind("ajaxSend", function() {
+            spinner.show();
+        }).bind("ajaxStop", function() {
+            spinner.hide();
+        }).bind("ajaxError", function() {
+            spinner.hide();
+        });
+
         $('#talkform').submit(function (e) {
-            debugger;
             e.preventDefault();
             var user = $('#say').val();
-            $('.usersay').text(user);
+            $('#chatboard').append(
+                $('<div>', {class: 'usersay', text: user})
+            );
             var formdata = $("#talkform").serialize();
             $('#say').val('')
             $('#say').focus();
             $.post('<?php echo $url ?>', formdata, function (data) {
                 var b = data.botsay;
-                debugger;
                 if (b.indexOf('[img]') >= 0) {
                     b = showImg(b);
                 }
@@ -187,7 +167,9 @@ function jq_get_convo_id()
                 if (user != usersay) {
                     $('.usersay').text(usersay);
                 }
-                $('.botsay').html(b);
+                $('#chatboard').append(
+                    $('<div>', {class: 'botsay'}).html(b)
+                );
             }, 'json').fail(function (xhr, textStatus, errorThrown) {
                 $('#urlwarning').html("Something went wrong! Error = " + errorThrown);
             });

@@ -28,9 +28,6 @@ setcookie('bot_id', $bot_id);
 
 $url = 'http://web.stanford.edu/~mulrich/cgi-bin/Program-O/chatbot/conversation_start.php';
 
-//  $display = "The URL for the API is currently set as:<br />\n$url.<br />\n";
-//  $display .= 'Please make sure that you edit this file to change the value of the variable $url in this file to reflect the correct URL address of your chatbot, and to remove this message.' . PHP_EOL;
-
 /**
  * Function jq_get_convo_id
  *
@@ -57,7 +54,7 @@ function jq_get_convo_id()
     <link rel="shortcut icon" href="./favicon.ico" type="image/x-icon"/>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <title>ChameleonBot</title>
-    <meta name="Description" content="A Free Open Source AIML PHP MySQL Chatbot called Program-O. Version2"/>
+    <meta name="Description" content="A CS 221 project by Marcus, Mark, and Tristan."/>
     <meta name="keywords" content="Open Source, AIML, PHP, MySQL, Chatbot, Program-O, Version2"/>
     <meta name="keywords" content="Open Source, AIML, PHP, MySQL, Chatbot, Program-O, Version2"/>
     <style type="text/css">
@@ -137,15 +134,7 @@ function jq_get_convo_id()
         // put all your jQuery goodness in here.
 
         var spinner = $('#spinner');
-
-        $(document).bind("ajaxSend", function() {
-            spinner.show();
-        }).bind("ajaxStop", function() {
-            spinner.hide();
-        }).bind("ajaxError", function() {
-            spinner.hide();
-        });
-
+        window.location.hash = '/arnold_schwarzenegger';
         $('#talkform').submit(function (e) {
             e.preventDefault();
             var user = $('#say').val();
@@ -153,10 +142,15 @@ function jq_get_convo_id()
                 $('<div>', {class: 'usersay', text: user})
             );
             var formdata = $("#talkform").serialize();
-            $('#say').val('')
+            formdata += '&bot_name=' + window.location.hash.substr(1);
+            $('#say').val('');
             $('#say').focus();
+            spinner.show();
             $.post('<?php echo $url ?>', formdata, function (data) {
                 var b = data.botsay;
+                if (b == null) {
+                    b = 'I have nothing to say.'
+                }
                 if (b.indexOf('[img]') >= 0) {
                     b = showImg(b);
                 }
@@ -171,7 +165,11 @@ function jq_get_convo_id()
                     $('<div>', {class: 'botsay'}).html(b)
                 );
             }, 'json').fail(function (xhr, textStatus, errorThrown) {
-                $('#urlwarning').html("Something went wrong! Error = " + errorThrown);
+                $('#chatboard').append(
+                    $('<div>', {class: 'botsay'}).html('Sorry, it appears that my servers are down. Maybe you would like to refresh this page and try again?')
+                );
+            }).always(function () {
+                spinner.hide();
             });
             return false;
         });

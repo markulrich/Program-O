@@ -141,7 +141,7 @@ function get_json($convoArr, $conversation)
         $show_json['usersay'] = $humanInput;
         list($quote, $quote_score) = get_quote($humanInput);
         $response = stripslashes($conversation_subarray['response']);
-        $response_score = strlen($response) > 0 ? Rand(5, 15) : -INF;
+        $response_score = strlen($response) > 0 ? Rand(10, 20) : -INF;
         $show_json['botsay'] = $quote_score > $response_score ? $quote : $response;
         $i++;
     }

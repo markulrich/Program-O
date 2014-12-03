@@ -1,5 +1,11 @@
 from sklearn.linear_model import SGDClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn import tree
+from sklearn import svm
+from sklearn.ensemble import RandomForestClassifier
+from sklearn import cross_validation
 from features import Features
+import numpy as np
 
 
 def main():
@@ -71,6 +77,24 @@ def main():
     clf.fit(X, y)
     print 'Based on %d points, coefficients are:' % len(X)
     print clf.coef_
+
+    models = [SGDClassifier(loss="hinge", penalty="l1"),
+              RandomForestClassifier(n_estimators=10),
+              svm.SVC(),
+              tree.DecisionTreeClassifier()]
+
+    # kf = cross_validation.KFold(len(X), n_folds=10)
+    X = np.array(X)
+    y = np.array(y)
+    clf = SGDClassifier(loss="hinge", penalty="l2")
+    clf.fit(X, y)
+    print 'Based on %d points, coefficients are:' % len(X)
+    print clf.coef_
+    print 'SCORES'
+    for m in models:
+        scores = cross_validation.cross_val_score(m, X, y, cv=10)
+        print "Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std())
+
 
 
 if __name__ == '__main__':

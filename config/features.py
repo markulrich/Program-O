@@ -75,7 +75,6 @@ class Features:
     FEATURES = [
         lambda i, q: abs(2 * len(i) - len(q)) / max(2 * len(i), len(q)),
         lambda i, q: Features.similar_word_lengths(i, q),
-        lambda i, q: Features.similarity_word_feature(i, q),
         lambda i, q: Features.question_feature(i, q),
         lambda i, q: Features.similarity_nword_feature(i, q, 1),
         lambda i, q: Features.similarity_nword_feature(i, q, 2),
@@ -94,7 +93,6 @@ class Features:
     WEIGHTS = [
         0.,
         0.,
-        13.75457355,
         0.,
         5.05363581,
         3.51367434,

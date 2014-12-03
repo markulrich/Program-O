@@ -75,8 +75,10 @@ def main():
 
     clf = SGDClassifier(loss="hinge", penalty="l2")
     clf.fit(X, y)
+    print 'predicts:'
+    print clf.predict(X)
     print 'Based on %d points, coefficients are:' % len(X)
-    print clf.coef_
+    print clf.coef_[0]
 
     models = [SGDClassifier(loss="hinge", penalty="l1"),
               RandomForestClassifier(n_estimators=10),
@@ -93,7 +95,7 @@ def main():
     print 'SCORES'
     for m in models:
         scores = cross_validation.cross_val_score(m, X, y, cv=10)
-        print "Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std())
+        print "Accuracy: %0.4f (+/- %0.4f)" % (scores.mean(), scores.std())
 
 
 

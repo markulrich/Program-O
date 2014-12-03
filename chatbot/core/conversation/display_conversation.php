@@ -116,7 +116,7 @@ function get_quote()
 {
     //$string = file_get_contents("/bots/arnold_schwarzenegger/quotes.json");
     $result = array();
-    exec('python get_quote.py arnold_schwarzenegger This is a random test human input', $result);// . escapeshellarg('This is a random test human input'), $result);
+    exec('python get_quote.py arnold_schwarzenegger ' . escapeshellarg('This is a random test human input'), $result);
     return Array($result[0], $result[1]);
     //$json_a = json_decode($string, true);
     //return substr($string, -10);

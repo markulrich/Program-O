@@ -100,13 +100,9 @@ function jq_get_convo_id()
 <body>
 <h3>ChameleonBot</h3>
 
-<p>
-    The beginnings of a CS 221 project by Marcus, Mark, and Tristan.
-</p>
-
 <div class="centerthis">
     <div id="chatboard">
-        <div class="botsay">Hello!</div>
+        <div class="botsay">Arnold Schwarzenegger: Hello.</div>
     </div>
     <div id="spinner" class="spinner" style="display:none;">
         <img id="img-spinner" src="spinner.gif" alt="Loading"/>
@@ -125,8 +121,9 @@ function jq_get_convo_id()
         </div>
     </form>
 </div>
+<br />
 <div id="shameless_plug">
-    Chatbot powered by code from <a href="http://www.program-o.com" target="_top">program-o.com</a>
+    A CS 221 project by Marcus, Mark, and Tristan. Chatbot powered by code from <a href="http://www.program-o.com" target="_top">program-o.com</a>
 </div>
 <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
 <script type="text/javascript">
@@ -158,11 +155,8 @@ function jq_get_convo_id()
                     b = makeLink(b);
                 }
                 var usersay = data.usersay;
-                if (user != usersay) {
-                    $('.usersay').text(usersay);
-                }
                 $('#chatboard').append(
-                    $('<div>', {class: 'botsay'}).html(b)
+                    $('<div>', {class: 'botsay'}).html('Arnold Schwarzenegger: ' + b)
                 );
             }, 'json').fail(function (xhr, textStatus, errorThrown) {
                 $('#chatboard').append(

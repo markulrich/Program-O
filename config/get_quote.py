@@ -59,19 +59,19 @@ class Features:
         return abs(i_av - q_av) / max(i_av, q_av)
 
     FEATURES = [
-        lambda i, q: abs(2 * len(i) - len(q)) / max(2 * len(i), len(q)),
-        lambda i, q: Features.similar_word_lengths(i, q),
+        lambda i, q: 1 - abs(2 * len(i) - len(q)) / max(2 * len(i), len(q)),
+        lambda i, q: 1 - Features.similar_word_lengths(i, q),
         lambda i, q: Features.similarity_word_feature(i, q),
-        lambda i, q: Features.question_feature(i, q),
+        lambda i, q: 1 - Features.question_feature(i, q),
         lambda i, q: Features.similarity_ngram_feature(i, q)
     ]
 
     WEIGHTS = [
-        -5.0,
-        -2.0,
-        10,
-        -30,
-        5
+        5.0,
+        2.0,
+        80,
+        30,
+        2
     ]
 
     def getFeats(self, quote):

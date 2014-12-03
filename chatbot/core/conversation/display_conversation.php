@@ -116,9 +116,7 @@ function get_quote()
 {
     //$string = file_get_contents("/bots/arnold_schwarzenegger/quotes.json");
     $result = array();
-    runDebug(__FILE__, __FUNCTION__, __LINE__, "awjkelfjdkwajekl", 4);
     exec('python get_quote.py arnold_schwarzenegger This is a random test human input', $result);// . escapeshellarg('This is a random test human input'), $result);
-    runDebug(__FILE__, __FUNCTION__, __LINE__, "answer is" . $result[0], 4);
     return Array($result[0], $result[1]);
     //$json_a = json_decode($string, true);
     //return substr($string, -10);
@@ -142,7 +140,7 @@ function get_json($convoArr, $conversation)
         $show_json['usersay'] = stripslashes($conversation_subarray['input']);
         list($quote, $quote_score) = get_quote();
         $response = stripslashes($conversation_subarray['response']);
-        $response_score = strlen($response) > 0 ? Rand(0, 1) : 0;
+        $response_score = strlen($response) > 0 ? Rand(-10000, 10000) : -INF;
         $show_json['botsay'] = $quote_score > $response_score ? $quote : $response;
         $i++;
     }

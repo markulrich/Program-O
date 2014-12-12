@@ -10,7 +10,9 @@ def parseQuotes(html_doc, name):
 def main():
     name = sys.argv[1]
     directory = '../bots/{}/'.format(name)
-    if os.path.exists(directory + QUOTES_FILE):
+    fileName = directory + QUOTES_FILE
+    if os.path.exists(fileName):
+        print 'File {} already exists'.format(fileName)
         return
 
     endpoint = 'http://www.brainyquote.com/quotes/authors/{}/{}'.format(name[0], name)
@@ -24,12 +26,14 @@ def main():
             response = urllib2.urlopen(req)
             res |= parseQuotes(response.read(), name)
         except urllib2.HTTPError:
-            continue
+            break
     if i == 1:
+        print 'Sorry could not find any quotes for {}, please use format firstname_lastname.'.format(name)
         exit(1)
     if not os.path.exists(directory):
         os.makedirs(directory)
-    with open(directory + QUOTES_FILE, 'w') as of:
+    with open(fileName, 'w') as of:
+        print 'Outputing file to {}'.format(fileName)
         json.dump(list(res), of)
 
 if __name__ == '__main__':

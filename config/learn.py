@@ -6,9 +6,21 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn import cross_validation
 from features import Features
 import numpy as np
+from sklearn import datasets
+from sklearn.cross_validation import train_test_split
+from sklearn.grid_search import GridSearchCV
+from sklearn.metrics import classification_report
+from sklearn.svm import SVC
 
+import numpy as np
+from scipy import interp
+import matplotlib.pyplot as plt
 
-def main():
+from sklearn import svm, datasets
+from sklearn.metrics import roc_curve, auc
+from sklearn.cross_validation import StratifiedKFold
+
+def get_data():
     training_data = {}
 
     questions = ["What are your hobbies?", "What do you think about America?",
@@ -73,6 +85,11 @@ def main():
             print '\t%s' % quotes[i]
         y += y_part
 
+    return X, y
+
+def main():
+    X, y = get_data()
+
     clf = SGDClassifier(loss="hinge", penalty="l2")
     clf.fit(X, y)
     print 'predicts:'
@@ -85,7 +102,7 @@ def main():
               svm.SVC(),
               tree.DecisionTreeClassifier()]
 
-    # kf = cross_validation.KFold(len(X), n_folds=10)
+    kf = cross_validation.KFold(len(X), n_folds=10, shuffle=True)
     X = np.array(X)
     y = np.array(y)
     clf = SGDClassifier(loss="hinge", penalty="l2")
@@ -94,10 +111,85 @@ def main():
     print clf.coef_
     print 'SCORES'
     for m in models:
-        scores = cross_validation.cross_val_score(m, X, y, cv=10)
+        scores = kf.cross_val_score(m, X, y, cv=10)
         print "Accuracy: %0.4f (+/- %0.4f)" % (scores.mean(), scores.std())
 
+def grid_search():
+    X, y = get_data()
 
+    # Split the dataset in two equal parts
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.5, random_state=0)
+
+    # Set the parameters by cross-validation
+    tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-3, 1e-4],
+                         'C': [1e4, 1e5, 1e6]},
+                        {'kernel': ['linear'], 'C': [1e3, 1e4, 1e5, 1e6]}]
+
+    scores = ['precision', 'recall']
+
+    for score in scores:
+        print("# Tuning hyper-parameters for %s" % score)
+        print()
+
+        clf = GridSearchCV(SVC(C=1), tuned_parameters, cv=5, scoring=score)
+        clf.fit(X_train, y_train)
+
+        print("Best parameters set found on development set:")
+        print()
+        print(clf.best_estimator_)
+        print()
+        print("Grid scores on development set:")
+        print()
+        for params, mean_score, scores in clf.grid_scores_:
+            print("%0.3f (+/-%0.03f) for %r"
+                  % (mean_score, scores.std() / 2, params))
+        print()
+
+        print("Detailed classification report:")
+        print()
+        print("The model is trained on the full development set.")
+        print("The scores are computed on the full evaluation set.")
+        print()
+        y_true, y_pred = y_test, clf.predict(X_test)
+        print(classification_report(y_true, y_pred))
+        print()
+
+def plot_roc():
+    X, y = get_data()
+
+    # Run classifier with cross-validation and plot ROC curves
+    cv = StratifiedKFold(y, n_folds=6)
+    classifier = svm.SVC(kernel='linear', C=1e4)
+
+    mean_tpr = 0.0
+    mean_fpr = np.linspace(0, 1, 100)
+    all_tpr = []
+
+    for i, (train, test) in enumerate(cv):
+        probas_ = classifier.fit(X[train], y[train]).predict_proba(X[test])
+        # Compute ROC curve and area the curve
+        fpr, tpr, thresholds = roc_curve(y[test], probas_[:, 1])
+        mean_tpr += interp(mean_fpr, fpr, tpr)
+        mean_tpr[0] = 0.0
+        roc_auc = auc(fpr, tpr)
+        plt.plot(fpr, tpr, lw=1, label='ROC fold %d (area = %0.2f)' % (i, roc_auc))
+
+    plt.plot([0, 1], [0, 1], '--', color=(0.6, 0.6, 0.6), label='Luck')
+
+    mean_tpr /= len(cv)
+    mean_tpr[-1] = 1.0
+    mean_auc = auc(mean_fpr, mean_tpr)
+    plt.plot(mean_fpr, mean_tpr, 'k--',
+             label='Mean ROC (area = %0.2f)' % mean_auc, lw=2)
+
+    plt.xlim([-0.05, 1.05])
+    plt.ylim([-0.05, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver operating characteristic example')
+    plt.legend(loc="lower right")
+    plt.show()
 
 if __name__ == '__main__':
-    main()
+    plot_roc()

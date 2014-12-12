@@ -1,5 +1,5 @@
 import string
-
+from textblob import TextBlob
 
 class Features:
     def __init__(self, human_input, quotes):
@@ -71,6 +71,14 @@ class Features:
             return 0
 
     @staticmethod
+    def similar_sentiment_polarity(userInput, quote):
+        return abs(TextBlob(userInput).sentiment.polarity - TextBlob(quote).sentiment.polarity)
+
+    @staticmethod
+    def similar_sentiment_subjectivity(userInput, quote):
+        return abs(TextBlob(userInput).sentiment.subjectivity - TextBlob(quote).sentiment.subjectivity)
+
+    @staticmethod
     def similar_word_lengths(i, q):
         i_av = Features.avgWordLen(i)
         q_av = Features.avgWordLen(q)
@@ -91,7 +99,9 @@ class Features:
         lambda i, q: Features.similarity_ngram_feature(i, q, 5),
         lambda i, q: Features.similarity_ngram_feature(i, q, 6),
         lambda i, q: Features.similarity_ngram_feature(i, q, 7),
-        lambda i, q: Features.similarity_ngram_feature(i, q, 8)
+        lambda i, q: Features.similarity_ngram_feature(i, q, 8),
+        lambda i, q: Features.similar_sentiment_polarity(i, q),
+        lambda i, q: Features.similar_sentiment_subjectivity(i, q)
     ]
 
     WEIGHTS = [
@@ -109,7 +119,8 @@ class Features:
         10.72981724,
         8.36520828,
         6.23124858,
-        4.52811743
+        4.52811743,
+        0
     ]
 
     def getFeats(self, quote):

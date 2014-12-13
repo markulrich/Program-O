@@ -11,6 +11,7 @@ from sklearn.cross_validation import train_test_split
 from sklearn.grid_search import GridSearchCV
 from sklearn.metrics import classification_report
 from sklearn.svm import SVC
+from sklearn.feature_selection import f_regression
 
 import numpy as np
 from scipy import interp
@@ -79,13 +80,13 @@ def get_data():
         X += X_part
         y_part = [0] * len(X_part)
 
-        print 'Matches for %s:' % human_input
+        # print 'Matches for %s:' % human_input
         for i in matches:
             y_part[i] = 1
-            print '\t%s' % quotes[i]
+            # print '\t%s' % quotes[i]
         y += y_part
 
-    return X, y
+    return np.array(X), np.array(y)
 
 def main():
     X, y = get_data()
@@ -155,12 +156,14 @@ def grid_search():
         print(classification_report(y_true, y_pred))
         print()
 
-def plot_roc():
-    X, y = get_data()
+def plot_roc(plot, X, y):
 
     # Run classifier with cross-validation and plot ROC curves
-    cv = StratifiedKFold(y, n_folds=6)
-    classifier = svm.SVC(kernel='linear', C=1e4)
+    cv = StratifiedKFold(y, n_folds=15)
+
+    random_state = np.random.RandomState(0)
+    classifier = svm.SVC(kernel='linear', C=1e4, probability=True,
+                         random_state=random_state)
 
     mean_tpr = 0.0
     mean_fpr = np.linspace(0, 1, 100)
@@ -173,23 +176,39 @@ def plot_roc():
         mean_tpr += interp(mean_fpr, fpr, tpr)
         mean_tpr[0] = 0.0
         roc_auc = auc(fpr, tpr)
-        plt.plot(fpr, tpr, lw=1, label='ROC fold %d (area = %0.2f)' % (i, roc_auc))
-
-    plt.plot([0, 1], [0, 1], '--', color=(0.6, 0.6, 0.6), label='Luck')
+        # plt.plot(fpr, tpr, lw=1, label='ROC fold %d (area = %0.2f)' % (i, roc_auc))
 
     mean_tpr /= len(cv)
     mean_tpr[-1] = 1.0
     mean_auc = auc(mean_fpr, mean_tpr)
-    plt.plot(mean_fpr, mean_tpr, 'k--',
-             label='Mean ROC (area = %0.2f)' % mean_auc, lw=2)
 
-    plt.xlim([-0.05, 1.05])
-    plt.ylim([-0.05, 1.05])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('Receiver operating characteristic example')
-    plt.legend(loc="lower right")
-    plt.show()
+    if plot:
+        plt.plot([0, 1], [0, 1], '--', color=(0.8, 0.8, 0), label='Luck')
+        plt.plot(mean_fpr, mean_tpr, 'k--', color=(0, 0, 0.8),
+                 label='Mean ROC (area = %0.2f)' % mean_auc, lw=2)
+
+        plt.xlim([-0.05, 1.05])
+        plt.ylim([-0.05, 1.05])
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive Rate')
+        plt.title('Receiver Operating Characteristic')
+        plt.legend(loc="lower right")
+        plt.show()
+
+    return mean_auc
+
+def f_scores():
+    X, y = get_data()
+    F, pval = f_regression(X, y)
+    all_ind_f = []
+    for i,f in enumerate(F):
+        all_ind_f.append((f, i))
+    all_ind_f.sort(reverse=True)
+    print 'AUCs are'
+    for i in range(len(all_ind_f)):
+        print plot_roc(False, X[:, [all_ind_f[j][1] for j in range(i + 1)]], y)
 
 if __name__ == '__main__':
+    # plot_roc(True, *get_data())
+    # f_scores()
     grid_search()

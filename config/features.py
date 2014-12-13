@@ -1,10 +1,18 @@
 import string
 from textblob import TextBlob
+from collections import Counter
 
 class Features:
     def __init__(self, human_input, quotes):
         self.human_input = human_input
         self.quotes = quotes
+        self.wordFreq = Counter()
+        for quote in quotes:
+            quote = quote.lower()
+            stripped_quote = "".join(c for c in quote if c not in ('!', '.', ':', '?', ','))
+            quoteSet = set(stripped_quote.lower().split())
+            for word in quoteSet:
+                self.wordFreq[word] += 1
 
     @staticmethod
     def avgWordLen(sentance):
@@ -35,8 +43,14 @@ class Features:
         def find_ngrams(wordList, n):
             return zip(*[wordList[i:] for i in range(n)])
 
-        inputList = userInput.lower().split()
-        quoteList = quote.lower().split()
+        userInput = userInput.lower()
+        quote = quote.lower()
+        # TODO maybe take out ' '
+        stripped_input = "".join(c for c in userInput if c not in ('!', '.', ':', '?', ',', ' '))
+        stripped_quote = "".join(c for c in quote if c not in ('!', '.', ':', '?', ',', ' '))
+
+        inputList = stripped_input.lower().split()
+        quoteList = stripped_quote.lower().split()
         if (not (len(inputList) >= n and len(quoteList) >= n)):
             return 0
 
@@ -84,6 +98,21 @@ class Features:
         q_av = Features.avgWordLen(q)
         return abs(i_av - q_av) / max(i_av, q_av)
 
+    def tf_idf(self, userInput, quote, normalize):
+        userInput = userInput.lower()
+        quote = quote.lower()
+        stripped_input = "".join(c for c in userInput if c not in ('!', '.', ':', '?', ','))
+        stripped_quote = "".join(c for c in quote if c not in ('!', '.', ':', '?', ','))
+        inputSet = set(stripped_input.lower().split())
+        quoteSet = set(stripped_quote.lower().split())
+        total = 0.0
+        for input in inputSet:
+            if (input in quoteSet):
+                total += 1.0 / self.wordFreq[input]
+        if normalize:
+            total /= len(inputSet)
+        return total
+
     FEATURES = [
         lambda i, q: abs(2 * len(i) - len(q)) / max(2 * len(i), len(q)),
         lambda i, q: Features.similar_word_lengths(i, q),
@@ -100,8 +129,7 @@ class Features:
         lambda i, q: Features.similarity_ngram_feature(i, q, 6),
         lambda i, q: Features.similarity_ngram_feature(i, q, 7),
         lambda i, q: Features.similarity_ngram_feature(i, q, 8),
-        lambda i, q: Features.similar_sentiment_polarity(i, q),
-        lambda i, q: Features.similar_sentiment_subjectivity(i, q)
+        lambda i, q: Features.similar_sentiment_polarity(i, q)
     ]
 
     WEIGHTS = [
@@ -120,11 +148,16 @@ class Features:
         8.36520828,
         6.23124858,
         4.52811743,
+        0,
+        0,
         0
     ]
 
     def getFeats(self, quote):
-        return [feat(self.human_input, quote) for feat in Features.FEATURES]
+        return [feat(self.human_input, quote) for feat in Features.FEATURES] + [
+          # self.tf_idf(self.human_input, quote, True)
+          # self.tf_idf(self.human_input, quote, False)
+        ]
 
     def getFeatureVectors(self):
         return [self.getFeats(q) for q in self.quotes]
